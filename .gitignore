@@ -1,0 +1,4 @@
+*.rpm
+*.sql.gz
+*.deb
+tmp

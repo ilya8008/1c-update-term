@@ -1,0 +1,61 @@
+---
+- name: Copy 1c files
+  copy:
+    src: "{{ item }}"
+    dest: /tmp/
+  with_fileglob:
+    - 1c/*
+
+- name: Find common deb files in /tmp folder
+  find:
+     paths: "/tmp"
+     pattern: "1c-enterprise83-common*.deb"
+  register: deb_common_files
+
+- name: Find server deb files in /tmp folder
+  find:
+     paths: "/tmp"
+     pattern: "1c-enterprise83-server*.deb"
+  register: deb_server_files
+
+- name: Find deb files in /tmp folder
+  find:
+     paths: "/tmp"
+     pattern: "1c*.deb"
+  register: deb_files
+
+- set_fact:
+    deb_list: "{{ deb_files.files | map(attribute='path') | list}}"
+
+- set_fact:
+    deb_common_list: "{{ deb_common_files.files | map(attribute='path') | list}}"
+
+- set_fact:
+    deb_server_list: "{{ deb_server_files.files | map(attribute='path') | list}}"
+
+- name: Remove old 1c files
+  apt:
+    name: "1c-enterprise83*"
+    state: absent
+
+- name: Install common debs
+  apt:
+    deb: "{{ item }}"
+  with_items: "{{ deb_common_list }}"
+
+- name: Install server debs
+  apt:
+    deb: "{{ item }}"
+  with_items: "{{ deb_server_list }}"
+
+- name: Install debs
+  apt:
+    deb: "{{ item }}"
+  with_items: "{{ deb_list }}"
+  
+- name: Delete debs
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ deb_list }}"

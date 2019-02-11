@@ -1,0 +1,3 @@
+---
+# tasks file for 1c-update-srv
+- include: update_1c.yml
